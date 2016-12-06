@@ -13,15 +13,11 @@ namespace esempio_zedgraph
 {
     public partial class Form1 : Form
     {
-        public double[] x = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-        public double[] y = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 7, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1 };
-
-        public Form1()
-        {
-            InitializeComponent();
-            EventArgs e = new EventArgs();
-            zedGraphControl1_Load(this, e);
-        }
+        private Timer timer;
+        private PointPairList pointPl = new PointPairList();
+        private double X, Y;
+        public List<double> Lx = new List<double>();
+        public List<double> Ly = new List<double>();
 
         private void zedGraphControl1_Load(object sender, EventArgs e)
         {
@@ -29,14 +25,14 @@ namespace esempio_zedgraph
             // GraphPane object holds one or more Curve objects (or plots)
             GraphPane myPane = zedGraphControl1.GraphPane;
             myPane.Title.Text = "Accelerometer";
-            myPane.XAxis.Title.Text = "Time(10^-2sec)";
-            myPane.YAxis.Title.Text = "Dati(#)";
+            myPane.XAxis.Title.Text = "Time(ms)";
+            myPane.YAxis.Title.Text = "g(m/sec^2)";
             // myPane.YAxis.Scale.MagAuto = false;
-            // PointPairList holds the data for plotting, X and Y arrays 
-            PointPairList spl1 = new PointPairList(x, y);
+            // PointPairList holds the data for plotting, X and Y arrays
+
             // RollingPointPairList aaa = new RollingPointPairList(i);
             // Add curves to myPane object
-            LineItem myCurve = myPane.AddCurve("ADC", spl1, Color.Red, SymbolType.None);
+            LineItem myCurve = myPane.AddCurve("ADC", pointPl, Color.Red, SymbolType.None);
             //myCurve.Line.IsVisible = false;
             myCurve.Line.Width = 1.0F;
             // LineItem myCurve = myPane.AddCurve("ADC", aaa, Color.Blue, SymbolType.None);
@@ -45,7 +41,32 @@ namespace esempio_zedgraph
             zedGraphControl1.AxisChange();
             zedGraphControl1.Refresh();
             zedGraphControl1.Invalidate();
+        }
 
+    void timer_Tick(object sender, EventArgs e)
+    {
+        Y = Math.Cos(X);
+        Lx.Add(X); Ly.Add(Y);
+
+        X += 1;
+        // pointPl.Add(x,y);
+        pointPl.Add(X, Y);
+        zedGraphControl1.AxisChange();
+        //zedGraphControl1.Refresh(); 
+        zedGraphControl1.Invalidate();
+
+    }
+
+    public Form1()
+        {
+            InitializeComponent();
+            EventArgs e = new EventArgs();
+            zedGraphControl1_Load(this, e);
+
+            timer = new Timer();
+            timer.Interval = 100;
+            timer.Tick += new EventHandler(timer_Tick);
+            timer.Start();
         }
     }
 }
